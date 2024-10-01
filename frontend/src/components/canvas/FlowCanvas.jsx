@@ -13,6 +13,7 @@ import {
   edgesChange,
   connect,
   updateNodeData,
+  setHoveredNode,
 } from '../../store/flowSlice'; // Updated import path
 
 const nodeTypes = {
@@ -43,6 +44,18 @@ const FlowCanvas = () => {
     (id, data) => dispatch(updateNodeData({ id, data })),
     [dispatch]
   );
+
+  // Handle hover events
+  const onNodeMouseEnter = useCallback(
+    (event, node) => {
+      dispatch(setHoveredNode({ nodeId: node.id })); // Set hovered node in Redux
+    },
+    [dispatch]
+  );
+
+  const onNodeMouseLeave = useCallback(() => {
+    dispatch(setHoveredNode({ nodeId: null })); // Clear hovered node in Redux
+  }, [dispatch]);
 
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
@@ -77,6 +90,8 @@ const FlowCanvas = () => {
           nodeTypes={nodeTypes}
           fitView
           onInit={onInit}
+          onNodeMouseEnter={onNodeMouseEnter} // Add event handler for hover enter
+          onNodeMouseLeave={onNodeMouseLeave} // Add event handler for hover leave
         >
           <Background />
           <Operator />
