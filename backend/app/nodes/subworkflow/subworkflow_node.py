@@ -1,13 +1,12 @@
 import json
-from typing import Any, Dict, Set, Tuple
-
+from typing import Any, Dict, Tuple, Set
 from pydantic import BaseModel
 
-from ...execution.node_executor import NodeExecutor
+from ..base import BaseNode
 from ...execution.workflow_executor import WorkflowExecutor
 from ...execution.workflow_executor_dask import WorkflowExecutorDask
+from ...execution.node_executor import NodeExecutor
 from ...schemas.workflow import Workflow, WorkflowNode
-from ..base import BaseNode
 
 
 class SubworkflowNodeConfig(BaseModel):
@@ -154,14 +153,14 @@ if __name__ == "__main__":
           "max_tokens": 150,
           "temperature": 0.7,
           "system_prompt": "please provide average annual weather for {city}",
-          "output_schema": { "city": "str",
-            "weather": "str",
-            "temperature": "float",
-            "humidity": "int",
-            "feels_like": "float",
-            "precipitation": "float"
+          "output_schema": { "city": IOSchemaSupportedTypes.str,
+            "weather": IOSchemaSupportedTypes.str,
+            "temperature": IOSchemaSupportedTypes.float,
+            "humidity": IOSchemaSupportedTypes.int,
+            "feels_like": IOSchemaSupportedTypes.float,
+            "precipitation": IOSchemaSupportedTypes.float
           },
-          "input_schema": { "user_message": "str", "city":"str", "units":"str" }
+          "input_schema": { "user_message": IOSchemaSupportedTypes.str, "city":IOSchemaSupportedTypes.str, "units":IOSchemaSupportedTypes.str }
         }
       },
       {
@@ -172,8 +171,8 @@ if __name__ == "__main__":
           "max_tokens": 150,
           "temperature": 0.7,
           "system_prompt": "please provide average annual weather for {city} in {units}",
-          "output_schema": { "general_weather_guidelines": "str", "average_annual_temperature": "float" },
-          "input_schema": { "user_message": "str", "city":"str", "units":"str" },
+          "output_schema": { "general_weather_guidelines": IOSchemaSupportedTypes.str, "average_annual_temperature": IOSchemaSupportedTypes.float },
+          "input_schema": { "user_message": IOSchemaSupportedTypes.str, "city":IOSchemaSupportedTypes.str, "units":IOSchemaSupportedTypes.str },
           "samples": 5
         }
       },
@@ -183,10 +182,10 @@ if __name__ == "__main__":
         "config": {
           "code": "import time\\ntime.sleep(1)\\noutput_data = {'result': input_data['number'] * 2}",
           "input_schema": {
-            "number": "float"
+            "number": IOSchemaSupportedTypes.float
           },
           "output_schema": {
-            "result": "float"
+            "result": IOSchemaSupportedTypes.float
           }
         }
       },
@@ -209,8 +208,8 @@ if __name__ == "__main__":
           "llm_name": "gpt-4o",
           "max_tokens": 2048,
           "temperature": 0.7,
-          "input_schema": {"user_message": "str"},
-          "output_schema": {"complete_joke": "str"}
+          "input_schema": {"user_message": IOSchemaSupportedTypes.str},
+          "output_schema": {"complete_joke": IOSchemaSupportedTypes.str}
         }
       }
 

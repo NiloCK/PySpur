@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from ..dynamic_schema import DynamicSchemaNode
 from .llm_utils import create_messages, generate_text
 from .string_output_llm import ModelName
+from ...schemas.io_schema import IOSchema, IOSchemaSupportedTypes
 
 
 class AdvancedNodeConfig(BaseModel):
@@ -24,8 +25,10 @@ class AdvancedNodeConfig(BaseModel):
     system_prompt: str = Field(
         "You are a helpful assistant.", description="The system prompt for the LLM"
     )
-    output_schema: Dict[str, str]
-    input_schema: Dict[str, str] = {"user_message": "str"}
+    output_schema: IOSchema
+    input_schema: IOSchema = IOSchema(
+        user_message=IOSchemaSupportedTypes.str  # type: ignore
+    )
     few_shot_examples: Optional[List[Dict[str, str]]] = None
 
 
@@ -86,8 +89,14 @@ if __name__ == "__main__":
                 max_tokens=32,
                 temperature=0.1,
                 system_prompt="This is a test prompt.",
-                output_schema={"response": "str", "your_name": "str"},
-                input_schema={"user_message": "str", "your_name": "str"},
+                output_schema=IOSchema(
+                    response=IOSchemaSupportedTypes.str,  # type: ignore
+                    your_name=IOSchemaSupportedTypes.str,  # type: ignore
+                ),
+                input_schema=IOSchema(
+                    user_message=IOSchemaSupportedTypes.str,  # type: ignore
+                    your_name=IOSchemaSupportedTypes.str,  # type: ignore
+                ),
             )
         )
         advanced_input = advanced_llm_node.input_model.model_validate(

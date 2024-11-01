@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from ..dynamic_schema import DynamicSchemaNode
 from .advanced import AdvancedNode, AdvancedNodeConfig
+from ...schemas.io_schema import IOSchema, IOSchemaSupportedTypes
 
 
 class BestOfNNodeConfig(AdvancedNodeConfig):
@@ -45,7 +46,7 @@ class BestOfNNode(DynamicSchemaNode):
             temperature=self.config.rating_temperature,
             system_prompt=self.config.rating_prompt,
             input_schema=self.config.output_schema,
-            output_schema={"rating": "float"},
+            output_schema=IOSchema(rating=IOSchemaSupportedTypes.float),  # type: ignore
         )
         self._rating_llm_node = AdvancedNode(rating_llm_config)
 

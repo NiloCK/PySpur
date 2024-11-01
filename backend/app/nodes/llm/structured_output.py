@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from ..base import BaseNode
 from .llm_utils import create_messages, generate_text
 from .string_output_llm import ModelName
+from ...schemas.io_schema import IOSchema, IOSchemaSupportedTypes
 
 
 class StructuredOutputNodeConfig(BaseModel):
@@ -24,7 +25,7 @@ class StructuredOutputNodeConfig(BaseModel):
     system_prompt: str = Field(
         "You are a helpful assistant.", description="The system prompt for the LLM"
     )
-    output_schema: Dict[str, str]
+    output_schema: IOSchema
     few_shot_examples: Optional[List[Dict[str, str]]] = None
 
 
@@ -84,7 +85,9 @@ if __name__ == "__main__":
                 max_tokens=32,
                 temperature=0.1,
                 system_prompt="This is a test prompt.",
-                output_schema={"response": "str"},
+                output_schema=IOSchema(
+                    response=IOSchemaSupportedTypes.str  # type: ignore
+                ),
             )
         )
         structured_input = StructuredOutputNodeInput(

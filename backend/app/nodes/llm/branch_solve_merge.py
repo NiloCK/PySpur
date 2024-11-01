@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from ...schemas.io_schema import IOSchema, IOSchemaSupportedTypes
+
 from ..base import BaseNode
 from .advanced import AdvancedNode, AdvancedNodeConfig
 
@@ -33,7 +35,7 @@ class BranchSolveMergeNode(BaseNode):
 
         # Initialize the LLM node for the branch module
         branch_node_config = AdvancedNodeConfig.model_validate(config.model_dump())
-        branch_node_config.output_schema = {"subtasks": "list[str]"}
+        branch_node_config.output_schema = IOSchema(subtasks=IOSchemaSupportedTypes.List_str)  # type: ignore
         branch_node_config.system_prompt = config.branch_prompt
         self._branch_node = AdvancedNode(branch_node_config)
 
@@ -41,7 +43,7 @@ class BranchSolveMergeNode(BaseNode):
         solve_config = AdvancedNodeConfig.model_validate(config.model_dump())
         solve_config.system_prompt = config.solve_prompt
         solve_config.input_schema = branch_node_config.output_schema
-        solve_config.output_schema = {"subtask_solutions": "list[str]"}
+        solve_config.output_schema = IOSchema(subtask_solutions=IOSchemaSupportedTypes.List_str)  # type: ignore
         self._solve_node = AdvancedNode(solve_config)
 
         # Initialize the LLM node for the merge module

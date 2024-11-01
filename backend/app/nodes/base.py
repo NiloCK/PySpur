@@ -1,12 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, Dict, Type
 
 from pydantic import BaseModel, ValidationError, create_model
 
-DynamicSchemaValueType = str
-TSchemaValue = Type[
-    Union[int, float, str, bool, List[Any], Dict[Any, Any], Tuple[Any, ...]]
-]
+from ..schemas.io_schema import IOSchema
 
 
 class BaseNode(ABC):
@@ -67,78 +64,43 @@ class BaseNode(ABC):
         """
         Return the node's configuration.
         """
-        if type(self._config) == dict:
-            return self.config_model.model_validate(self._config)
+        if isinstance(self._config, Dict):
+            return self.config_model.model_validate(self._config)  # type: ignore
         return self.config_model.model_validate(self._config.model_dump())
 
-    @staticmethod
-    def _get_python_type(
-        value_type: DynamicSchemaValueType,
-    ) -> Type[Union[int, float, str, bool, List[Any], Dict[Any, Any], Tuple[Any, ...]]]:
-        """
-        Parse the value_type string into an actual Python type.
-        Supports arbitrarily nested types like 'int', 'list[int]', 'dict[str, int]', 'list[dict[str, list[int]]]', etc.
-        """
-
-        def parse_type(
-            s: str,
-        ) -> TSchemaValue:
-            s = s.strip().lower()
-            if s == "int":
-                return int
-            elif s in ("int", "float", "str", "bool"):
-                return {"int": int, "float": float, "str": str, "bool": bool}[s]
-            elif s == "dict":
-                return Dict[Any, Any]
-            elif s == "list":
-                return List[Any]
-            elif s.startswith("list[") and s.endswith("]"):
-                inner_type_str = s[5:-1]
-                inner_type = parse_type(inner_type_str)
-                return List[inner_type]
-            elif s.startswith("dict[") and s.endswith("]"):
-                inner_types_str = s[5:-1]
-                key_type_str, value_type_str = split_types(inner_types_str)
-                key_type = parse_type(key_type_str)
-                value_type = parse_type(value_type_str)
-                return Dict[key_type, value_type]
-            else:
-                raise ValueError(f"Unsupported type: {s}")
-
-        def split_types(s: str) -> Tuple[str, str]:
-            """
-            Splits the string s at the top-level comma, correctly handling nested brackets.
-            """
-            depth = 0
-            start = 0
-            splits: List[str] = []
-            for i, c in enumerate(s):
-                if c == "[":
-                    depth += 1
-                elif c == "]":
-                    depth -= 1
-                elif c == "," and depth == 0:
-                    splits.append(s[start:i].strip())
-                    start = i + 1
-            splits.append(s[start:].strip())
-            if len(splits) != 2:
-                raise ValueError(f"Invalid dict type specification: {s}")
-            return splits[0], splits[1]
-
-        return parse_type(value_type)
-
     @classmethod
-    def get_model_for_schema_dict(
+    def get_model_for_io_schema(
         cls,
-        schema: Dict[str, DynamicSchemaValueType],
+        schema: IOSchema,
         schema_name: str,
         base_model: Type[BaseModel] = BaseModel,
     ) -> Type[BaseModel]:
         """
         Create a Pydantic model from a schema dictionary.
         """
-        schema_processed = {k: cls._get_python_type(v) for k, v in schema.items()}
+        schema_processed: Dict[str, Type[Any]] = {}
+        for field_name, field_type in schema.model_dump().items():
+            type_class = field_type.value
+            schema_processed[field_name] = type_class
+
         schema_type_dict = {k: (v, ...) for k, v in schema_processed.items()}
+        return create_model(
+            schema_name,
+            **schema_type_dict,  # type: ignore
+            __base__=base_model,
+        )
+
+    @classmethod
+    def get_model_for_schema_dict(
+        cls,
+        schema: Dict[str, str],
+        schema_name: str,
+        base_model: Type[BaseModel] = BaseModel,
+    ) -> Type[BaseModel]:
+        """
+        Create a Pydantic model from a schema dictionary.
+        """
+        schema_type_dict = {k: (v, ...) for k, v in schema.items()}
         return create_model(
             schema_name,
             **schema_type_dict,  # type: ignore
