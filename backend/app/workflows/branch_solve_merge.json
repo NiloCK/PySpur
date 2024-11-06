@@ -1,0 +1,66 @@
+{
+    "nodes": [
+      {
+        "id": "branch_node",
+        "type": "advanced_llm_node",
+        "config": {
+          "llm_name": "your_llm_model_name",
+          "max_tokens": 500,
+          "temperature": 0.7,
+          "system_prompt": "Please decompose the following task into multiple subtasks.",
+          "input_schema": {
+            "user_message": "str"
+          },
+          "output_schema": {
+            "subtasks": "list[str]"
+          }
+        }
+      },
+      {
+        "id": "solve_node",
+        "type": "advanced_llm_node",
+        "config": {
+          "llm_name": "your_llm_model_name",
+          "max_tokens": 1000,
+          "temperature": 0.7,
+          "system_prompt": "Please provide a detailed solution for each of the following subtasks.",
+          "input_schema": {
+            "subtasks": "list[str]"
+          },
+          "output_schema": {
+            "subtask_solutions": "list[str]"
+          }
+        }
+      },
+      {
+        "id": "merge_node",
+        "type": "advanced_llm_node",
+        "config": {
+          "llm_name": "your_llm_model_name",
+          "max_tokens": 1500,
+          "temperature": 0.7,
+          "system_prompt": "Please combine the following subtask solutions into a coherent and comprehensive final answer.",
+          "input_schema": {
+            "subtask_solutions": "list[str]"
+          },
+          "output_schema": {
+            "final_answer": "str"
+          }
+        }
+      }
+    ],
+    "links": [
+      {
+        "source_id": "branch_node",
+        "source_output_key": "subtasks",
+        "target_id": "solve_node",
+        "target_input_key": "subtasks"
+      },
+      {
+        "source_id": "solve_node",
+        "source_output_key": "subtask_solutions",
+        "target_id": "merge_node",
+        "target_input_key": "subtask_solutions"
+      }
+    ]
+  }
