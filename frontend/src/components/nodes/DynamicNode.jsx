@@ -6,7 +6,7 @@ import styles from './DynamicNode.module.css';
 import { Divider, Input } from '@nextui-org/react';
 import { updateNodeData } from '../../store/flowSlice';
 
-const DynamicNode = ({ id, type, data, position, ...props }) => {
+const DynamicNode = ({ id, type, data, position, selected, ...props }) => {
   const nodeRef = useRef(null);
   const [nodeWidth, setNodeWidth] = useState('auto');
   const [editingField, setEditingField] = useState(null);
@@ -186,13 +186,18 @@ const DynamicNode = ({ id, type, data, position, ...props }) => {
   return (
     <div style={{
       position: 'relative',
-      zIndex: props.parentNode ? 1 : 0
+      zIndex: props.parentNode ? 1 : 0,
+      opacity: selected ? 0.8 : 1,
     }}>
       <BaseNode
         id={id}
         data={nodeData}
-        style={{ width: nodeWidth }}
-        selected={props.selected}
+        style={{
+          width: nodeWidth,
+          border: selected ? '2px solid #0072F5' : '1px solid #ccc',
+          transition: 'all 0.2s ease',
+        }}
+        selected={selected}
       >
         <div className={styles.nodeWrapper} ref={nodeRef}>
           {renderHandles()}

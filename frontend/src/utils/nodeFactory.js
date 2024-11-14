@@ -1,4 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep';
+import { v4 as uuidv4 } from 'uuid';
 
 // Function to create a node based on its type
 export const createNode = (nodeTypes, type, id, position, additionalData = {}) => {
@@ -38,6 +39,23 @@ export const createNode = (nodeTypes, type, id, position, additionalData = {}) =
         ...outputProperties,
         ...additionalData.output.properties,
       },
+    };
+  }
+
+  // Add special handling for group nodes
+  if (type === 'group') {
+    return {
+      id: id || uuidv4(),
+      type: 'group',
+      position,
+      data: {
+        title: 'Group',
+        ...additionalData
+      },
+      style: {
+        width: 300,
+        height: 300,
+      }
     };
   }
 

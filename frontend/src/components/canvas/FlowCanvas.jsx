@@ -11,6 +11,8 @@ import {
   setSelectedNode,
   deleteNode,
   setWorkflowInputVariable,
+  groupNodes,
+  clearSelections,
 } from '../../store/flowSlice';
 // import ConnectionLine from './ConnectionLine';
 import NodeSidebar from '../nodes/nodeSidebar/NodeSidebar';
@@ -29,23 +31,31 @@ import { initializeFlow } from '../../store/flowSlice'; // Import the new action
 import InputNode from '../nodes/InputNode';
 import { useSaveWorkflow } from '../../hooks/useSaveWorkflow';
 import LoadingSpinner from '../LoadingSpinner'; // Updated import
+import GroupNode from '../nodes/GroupNode';
+import { Button } from "@nextui-org/react";
+import { Icon } from "@iconify/react";
 
 const useNodeTypes = ({ nodeTypesConfig }) => {
   const nodeTypes = useMemo(() => {
     if (!nodeTypesConfig) return {};
-    console.log('nodeTypesConfig', nodeTypesConfig);
-    return Object.keys(nodeTypesConfig).reduce((acc, category) => {
+
+    const types = {
+      group: GroupNode, // Add GroupNode type
+    };
+
+    Object.keys(nodeTypesConfig).forEach(category => {
       nodeTypesConfig[category].forEach(node => {
         if (node.name === 'InputNode') {
-          acc[node.name] = InputNode;
+          types[node.name] = InputNode;
         } else {
-          acc[node.name] = (props) => {
+          types[node.name] = (props) => {
             return <DynamicNode {...props} type={node.name} />;
           };
         }
       });
-      return acc;
-    }, {});
+    });
+
+    return types;
   }, [nodeTypesConfig]);
 
   const isLoading = !nodeTypesConfig;
@@ -93,6 +103,7 @@ const FlowCanvasContent = (props) => {
   const edges = useSelector((state) => state.flow.edges);
   const hoveredNode = useSelector((state) => state.flow.hoveredNode);
   const selectedNodeID = useSelector((state) => state.flow.selectedNode);
+  const selectedNodes = useSelector((state) => state.flow.selectedNodes);
 
   const saveWorkflow = useSaveWorkflow([nodes, edges], 10000); // 10 second delay
 
@@ -232,16 +243,15 @@ const FlowCanvasContent = (props) => {
 
   const onNodeClick = useCallback(
     (event, node) => {
-      dispatch(setSelectedNode({ nodeId: node.id }));
+      const isMultiSelect = event.ctrlKey || event.metaKey;
+      dispatch(setSelectedNode({ nodeId: node.id, isMultiSelect }));
     },
     [dispatch]
   );
 
   const onPaneClick = useCallback(() => {
-    if (selectedNodeID) {
-      dispatch(setSelectedNode({ nodeId: null }));
-    }
-  }, [dispatch, selectedNodeID]);
+    dispatch(clearSelections());
+  }, [dispatch]);
 
   const onNodesDelete = useCallback(
     (deletedNodes) => {
@@ -329,12 +339,74 @@ const FlowCanvasContent = (props) => {
     }
   }, [edges]);
 
+  const handleGroupNodes = useCallback(() => {
+    if (selectedNodes.length < 2) return;
+
+    // Calculate the bounding box of selected nodes
+    const selectedNodeObjects = nodes.filter(node => selectedNodes.includes(node.id));
+    const positions = selectedNodeObjects.map(node => node.position);
+
+    const minX = Math.min(...positions.map(p => p.x));
+    const minY = Math.min(...positions.map(p => p.y));
+    const maxX = Math.max(...positions.map(p => p.x));
+    const maxY = Math.max(...positions.map(p => p.y));
+
+    // Create group slightly larger than the bounding box
+    const padding = 50;
+    const groupPosition = {
+      x: minX - padding,
+      y: minY - padding
+    };
+
+    dispatch(groupNodes({
+      nodeIds: selectedNodes,
+      groupId: 'group-' + uuidv4(),
+      position: groupPosition
+    }));
+
+    // Clear selections after grouping
+    dispatch(clearSelections());
+  }, [dispatch, selectedNodes, nodes]);
+
+  // Update the GroupButton component
+  const GroupButton = useMemo(() => {
+    // Only show button in pointer mode with multiple selections
+    if (selectedNodes.length < 2 || mode !== 'pointer') return null;
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 5,
+          backgroundColor: 'white',
+          padding: '4px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Button
+          color="primary"
+          variant="flat"
+          startContent={<Icon icon="solar:box-linear" />}
+          onClick={handleGroupNodes}
+          size="sm"
+        >
+          Group {selectedNodes.length} Nodes
+        </Button>
+      </div>
+    );
+  }, [selectedNodes.length, handleGroupNodes, mode]);
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
   return (
     <div style={{ position: 'relative', height: '100%' }}>
+      {GroupButton}
       {isPopoverContentVisible && selectedEdge && (
         <div
           style={{
