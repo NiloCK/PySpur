@@ -14,7 +14,6 @@ const initialState = {
   sidebarWidth: 400,
   projectName: 'Untitled Project',
   workflowInputVariables: {},
-  selectedNodes: [],
 };
 
 const flowSlice = createSlice({
@@ -84,57 +83,16 @@ const flowSlice = createSlice({
       state.hoveredNode = action.payload.nodeId;
     },
     setSelectedNode: (state, action) => {
-      const { nodeId, nodeIds, isMultiSelect } = action.payload;
-
-      // Handle bulk selection update
-      if (nodeIds) {
-        state.selectedNodes = nodeIds;
-        state.selectedNode = nodeIds[nodeIds.length - 1] || null;
-        return;
-      }
-
-      // Handle single node selection
-      if (!nodeId) {
-        state.selectedNode = null;
-        state.selectedNodes = [];
-        return;
-      }
-
-      if (isMultiSelect) {
-        // If node is already selected, unselect it
-        if (state.selectedNodes.includes(nodeId)) {
-          state.selectedNodes = state.selectedNodes.filter(id => id !== nodeId);
-        } else {
-          state.selectedNodes.push(nodeId);
-        }
-        state.selectedNode = nodeId;
-      } else {
-        state.selectedNode = nodeId;
-        state.selectedNodes = [nodeId];
-      }
+      state.selectedNode = action.payload.nodeId;
     },
     deleteNode: (state, action) => {
       const nodeId = action.payload.nodeId;
-
-      // If deleting a group node, detach its children first
-      const childNodes = state.nodes.filter(node => node.parentNode === nodeId);
-      childNodes.forEach(child => {
-        const childNode = state.nodes.find(n => n.id === child.id);
-        if (childNode) {
-          delete childNode.parentNode;
-          childNode.position = {
-            x: childNode.position.x + (childNode.positionAbsolute?.x || 0),
-            y: childNode.position.y + (childNode.positionAbsolute?.y || 0),
-          };
-        }
-      });
-
-      // Delete the node and its associated edges
       state.nodes = state.nodes.filter((node) => node.id !== nodeId);
-      state.edges = state.edges.filter((edge) =>
-        edge.source !== nodeId && edge.target !== nodeId
-      );
 
+      // Delete all edges associated with the node
+      state.edges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId);
+
+      // Clear the selected node if it's the one being deleted
       if (state.selectedNode === nodeId) {
         state.selectedNode = null;
       }
@@ -209,45 +167,6 @@ const flowSlice = createSlice({
         targetHandle: link.target_input_key
       }));
     },
-
-    // Add new reducer for grouping nodes
-    groupNodes: (state, action) => {
-      const { nodeIds, groupId, position } = action.payload;
-
-      // Create new group node
-      const groupNode = {
-        id: groupId,
-        type: 'group',
-        position,
-        data: { title: 'Group' },
-        style: { width: 300, height: 300 }
-      };
-
-      // Add parentNode to selected nodes
-      state.nodes = state.nodes.map(node => {
-        if (nodeIds.includes(node.id)) {
-          return {
-            ...node,
-            parentNode: groupId,
-            extent: 'parent',
-            position: {
-              x: node.position.x - position.x,
-              y: node.position.y - position.y,
-            }
-          };
-        }
-        return node;
-      });
-
-      // Add group node
-      state.nodes.push(groupNode);
-    },
-
-    // Add a new action to clear selections
-    clearSelections: (state) => {
-      state.selectedNode = null;
-      state.selectedNodes = [];
-    },
   },
 });
 
@@ -269,9 +188,7 @@ export const {
   setWorkflowInputVariable,
   deleteWorkflowInputVariable,
   updateWorkflowInputVariableKey,
-  resetFlow,
-  groupNodes,
-  clearSelections
+  resetFlow
 } = flowSlice.actions;
 
 export default flowSlice.reducer;

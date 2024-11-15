@@ -1,34 +1,34 @@
 import { useCallback } from 'react';
-import { useReactFlow, useStoreApi } from '@xyflow/react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setNodes } from '../store/flowSlice';
 
 function useDetachNodes() {
-  const { setNodes } = useReactFlow();
-  const store = useStoreApi();
+  const dispatch = useDispatch();
+  const nodes = useSelector(state => state.flow.nodes);
 
   const detachNodes = useCallback(
     (ids: string[], removeParentId?: string) => {
-      const { nodeLookup } = store.getState();
-      const nextNodes = Array.from(nodeLookup.values()).map((n) => {
-        if (ids.includes(n.id) && n.parentId) {
-          const parentNode = nodeLookup.get(n.parentId);
+      const updatedNodes = nodes.map(node => {
+        if (ids.includes(node.id) && node.parentNode) {
+          const parentNode = nodes.find(n => n.id === node.parentNode);
           return {
-            ...n,
+            ...node,
             position: {
-              x: n.position.x + (parentNode?.internals.positionAbsolute.x ?? 0),
-              y: n.position.y + (parentNode?.internals.positionAbsolute.y ?? 0),
+              x: node.position.x + (parentNode?.position.x ?? 0),
+              y: node.position.y + (parentNode?.position.y ?? 0),
             },
-            expandParent: undefined,
-            parentId: undefined,
+            extent: undefined,
+            parentNode: undefined,
           };
         }
-        return n;
+        return node;
       });
 
-      setNodes(
-        nextNodes.filter((n) => !removeParentId || n.id !== removeParentId)
-      );
+      dispatch(setNodes({
+        nodes: updatedNodes.filter(n => !removeParentId || n.id !== removeParentId)
+      }));
     },
-    [setNodes, store]
+    [dispatch, nodes]
   );
 
   return detachNodes;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { ReactFlow, Background, ReactFlowProvider, useViewport } from '@xyflow/react';
+import { ReactFlow, Background, ReactFlowProvider, useViewport, Panel } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useSelector, useDispatch } from 'react-redux';
 import Operator from './footer/operator/Operator';
@@ -11,8 +11,6 @@ import {
   setSelectedNode,
   deleteNode,
   setWorkflowInputVariable,
-  groupNodes,
-  clearSelections,
 } from '../../store/flowSlice';
 // import ConnectionLine from './ConnectionLine';
 import NodeSidebar from '../nodes/nodeSidebar/NodeSidebar';
@@ -32,30 +30,26 @@ import InputNode from '../nodes/InputNode';
 import { useSaveWorkflow } from '../../hooks/useSaveWorkflow';
 import LoadingSpinner from '../LoadingSpinner'; // Updated import
 import GroupNode from '../nodes/GroupNode';
-import { Button } from "@nextui-org/react";
+import { useGroupNodes } from '../../hooks/useGroupNodes';
+import { Button } from '@nextui-org/react';
 import { Icon } from "@iconify/react";
 
 const useNodeTypes = ({ nodeTypesConfig }) => {
   const nodeTypes = useMemo(() => {
     if (!nodeTypesConfig) return {};
-
-    const types = {
-      group: GroupNode, // Add GroupNode type
-    };
-
-    Object.keys(nodeTypesConfig).forEach(category => {
+    console.log('nodeTypesConfig', nodeTypesConfig);
+    return Object.keys(nodeTypesConfig).reduce((acc, category) => {
       nodeTypesConfig[category].forEach(node => {
         if (node.name === 'InputNode') {
-          types[node.name] = InputNode;
+          acc[node.name] = InputNode;
         } else {
-          types[node.name] = (props) => {
+          acc[node.name] = (props) => {
             return <DynamicNode {...props} type={node.name} />;
           };
         }
       });
-    });
-
-    return types;
+      return acc;
+    }, {});
   }, [nodeTypesConfig]);
 
   const isLoading = !nodeTypesConfig;
@@ -103,7 +97,6 @@ const FlowCanvasContent = (props) => {
   const edges = useSelector((state) => state.flow.edges);
   const hoveredNode = useSelector((state) => state.flow.hoveredNode);
   const selectedNodeID = useSelector((state) => state.flow.selectedNode);
-  const selectedNodes = useSelector((state) => state.flow.selectedNodes);
 
   const saveWorkflow = useSaveWorkflow([nodes, edges], 10000); // 10 second delay
 
@@ -243,15 +236,16 @@ const FlowCanvasContent = (props) => {
 
   const onNodeClick = useCallback(
     (event, node) => {
-      const isMultiSelect = event.ctrlKey || event.metaKey;
-      dispatch(setSelectedNode({ nodeId: node.id, isMultiSelect }));
+      dispatch(setSelectedNode({ nodeId: node.id }));
     },
     [dispatch]
   );
 
   const onPaneClick = useCallback(() => {
-    dispatch(clearSelections());
-  }, [dispatch]);
+    if (selectedNodeID) {
+      dispatch(setSelectedNode({ nodeId: null }));
+    }
+  }, [dispatch, selectedNodeID]);
 
   const onNodesDelete = useCallback(
     (deletedNodes) => {
@@ -339,66 +333,42 @@ const FlowCanvasContent = (props) => {
     }
   }, [edges]);
 
-  const handleGroupNodes = useCallback(() => {
-    if (selectedNodes.length < 2) return;
+  const { onGroup } = useGroupNodes();
+
+  const getGroupButtonPosition = useCallback(() => {
+    const selectedNodes = nodes.filter(node => node.selected && !node.parentNode);
+    if (selectedNodes.length <= 1) return null;
 
     // Calculate the bounding box of selected nodes
-    const selectedNodeObjects = nodes.filter(node => selectedNodes.includes(node.id));
-    const positions = selectedNodeObjects.map(node => node.position);
+    const bounds = selectedNodes.reduce(
+      (acc, node) => {
+        const nodeWidth = node.width || 150;
+        const nodeHeight = node.height || 40;
 
-    const minX = Math.min(...positions.map(p => p.x));
-    const minY = Math.min(...positions.map(p => p.y));
-    const maxX = Math.max(...positions.map(p => p.x));
-    const maxY = Math.max(...positions.map(p => p.y));
-
-    // Create group slightly larger than the bounding box
-    const padding = 50;
-    const groupPosition = {
-      x: minX - padding,
-      y: minY - padding
-    };
-
-    dispatch(groupNodes({
-      nodeIds: selectedNodes,
-      groupId: 'group-' + uuidv4(),
-      position: groupPosition
-    }));
-
-    // Clear selections after grouping
-    dispatch(clearSelections());
-  }, [dispatch, selectedNodes, nodes]);
-
-  // Update the GroupButton component
-  const GroupButton = useMemo(() => {
-    // Only show button in pointer mode with multiple selections
-    if (selectedNodes.length < 2 || mode !== 'pointer') return null;
-
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 5,
-          backgroundColor: 'white',
-          padding: '4px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}
-      >
-        <Button
-          color="primary"
-          variant="flat"
-          startContent={<Icon icon="solar:box-linear" />}
-          onClick={handleGroupNodes}
-          size="sm"
-        >
-          Group {selectedNodes.length} Nodes
-        </Button>
-      </div>
+        return {
+          minX: Math.min(acc.minX, node.position.x),
+          maxX: Math.max(acc.maxX, node.position.x + nodeWidth),
+          minY: Math.min(acc.minY, node.position.y),
+          maxY: Math.max(acc.maxY, node.position.y + nodeHeight),
+        };
+      },
+      {
+        minX: Infinity,
+        maxX: -Infinity,
+        minY: Infinity,
+        maxY: -Infinity,
+      }
     );
-  }, [selectedNodes.length, handleGroupNodes, mode]);
+
+    // Get viewport from ReactFlow
+    const { x: viewportX, y: viewportY, zoom } = reactFlowInstance.getViewport();
+
+    // Apply viewport transform to get the correct screen position
+    return {
+      x: (bounds.maxX + 20) * zoom + viewportX,
+      y: (bounds.minY - 20) * zoom + viewportY,
+    };
+  }, [nodes, reactFlowInstance]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -406,7 +376,6 @@ const FlowCanvasContent = (props) => {
 
   return (
     <div style={{ position: 'relative', height: '100%' }}>
-      {GroupButton}
       {isPopoverContentVisible && selectedEdge && (
         <div
           style={{
@@ -518,6 +487,29 @@ const FlowCanvasContent = (props) => {
           </div>
         )}
       </div>
+      {mode === 'pointer' && reactFlowInstance && getGroupButtonPosition() && (
+        <Panel
+          className="absolute"
+          style={{
+            left: getGroupButtonPosition().x,
+            top: getGroupButtonPosition().y,
+            transform: 'none',
+            background: 'transparent',
+            border: 'none',
+            pointerEvents: 'all'
+          }}
+        >
+          <Button
+            size="sm"
+            onClick={onGroup}
+            className="bg-white hover:bg-default-100 border-1 shadow-lg"
+            startContent={<Icon icon="solar:box-bold" />}
+            disabled={nodes.filter(node => node.selected && !node.parentNode).length <= 1}
+          >
+            Group
+          </Button>
+        </Panel>
+      )}
     </div>
   );
 };
