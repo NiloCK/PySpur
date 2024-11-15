@@ -44,6 +44,7 @@ class WorkflowLinkSchema(BaseModel):
     source_output_key: str
     target_id: str
     target_input_key: str
+    condition: Optional[str] = None
 
 
 class WorkflowDefinitionSchema(BaseModel):

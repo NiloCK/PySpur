@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from ..schemas.node_type_schemas import NodeTypeSchema
 from .base import BaseNode
+from .conditional.conditional_node import ConditionalNode
 
 
 class NodeFactory:
@@ -92,6 +93,7 @@ class NodeFactory:
                 "class_name": "PythonFuncNode",
             },
         ],
+        "ConditionalNode": ConditionalNode,
     }
 
     _DEPRECATED_NODE_TYPES = [

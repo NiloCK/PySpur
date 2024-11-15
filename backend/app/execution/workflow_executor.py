@@ -84,8 +84,12 @@ class WorkflowExecutor:
         dependencies: Dict[str, Set[str]] = {
             node.id: set() for node in self.workflow.nodes
         }
+        self._conditional_links: Dict[str, WorkflowLinkSchema] = {}
         for link in self.workflow.links:
-            dependencies[link.target_id].add(link.source_id)
+            if getattr(link, 'condition', None):
+                self._conditional_links[link.target_id] = link
+            else:
+                dependencies[link.target_id].add(link.source_id)
         self._dependencies = dependencies
 
     def _get_node_task(self, node_id: str) -> asyncio.Task[None]:
@@ -110,6 +114,10 @@ class WorkflowExecutor:
             await asyncio.gather(
                 *(self._get_node_task(dep_id) for dep_id in dependency_ids)
             )
+
+        # Check for conditional execution
+        if self._should_skip_node(node_id):
+            return  # Skip execution of this node
 
         # Prepare inputs
         input_data_dict = self._prepare_node_input(node_id)
@@ -241,3 +249,19 @@ class WorkflowExecutor:
             results.extend(await asyncio.gather(*batch_tasks))
 
         return results
+
+    def _should_skip_node(self, node_id: str) -> bool:
+        # Determine if the node should be skipped based on conditions
+        if node_id in self._conditional_links:
+            link = self._conditional_links[node_id]
+            condition_met = self._evaluate_condition(link)
+            return not condition_met
+        return False
+
+    def _evaluate_condition(self, link: WorkflowLinkSchema) -> bool:
+        # Evaluate the condition based on the output of the source node
+        source_output = self._outputs.get(link.source_id)
+        if source_output is None:
+            return False  # Source node has not produced an output yet
+        source_value = getattr(source_output, link.source_output_key)
+        return source_value == link.condition  # Check if the condition is met
