@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,7 @@ class SingleLLMCallNodeConfig(DynamicSchemaNodeConfig):
         "You are a helpful assistant.", description="The system prompt for the LLM"
     )
     input_schema: Dict[str, str] = {"user_message": "str"}
-    few_shot_examples: Optional[List[Dict[str, str]]] = None
+    few_shot_examples: List[Dict[str, str]] = []
 
 
 class SingleLLMCallNodeInput(BaseModel):

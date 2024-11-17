@@ -21,19 +21,19 @@ EMBEDDING_DIMENSIONS = 1536
 
 class ModelInfo(BaseModel):
     name: str
-    max_tokens: Optional[int] = Field(
-        ...,
+    max_tokens: int = Field(
+        default=1024,
         ge=1,
         le=65536,
         description="Maximum number of tokens the model can generate",
     )
-    temperature: Optional[float] = Field(
+    temperature: float = Field(
         default=0.7,
         ge=0.0,
         le=1.0,
         description="Temperature for randomness, between 0.0 and 1.0",
     )
-    top_p: Optional[float] = Field(
+    top_p: float = Field(
         default=1.0,
         ge=0.0,
         le=1.0,

@@ -14,6 +14,7 @@ import {
 } from '../../store/flowSlice';
 // import ConnectionLine from './ConnectionLine';
 import NodeSidebar from '../nodes/nodeSidebar/NodeSidebar';
+import NodeConfigForm from '../nodes/nodeSidebar/NodeConfigForm';
 import { Dropdown, DropdownMenu, DropdownSection, DropdownItem } from '@nextui-org/react';
 import DynamicNode from '../nodes/DynamicNode';
 import { v4 as uuidv4 } from 'uuid';
@@ -426,7 +427,7 @@ const FlowCanvasContent = (props) => {
             className="absolute top-0 right-0 h-full bg-white border-l border-gray-200"
             style={{ zIndex: 2 }}
           >
-            <NodeSidebar nodeID={selectedNodeID} />
+            <NodeConfigForm nodeId={selectedNodeID} />
           </div>
         )}
       </div>

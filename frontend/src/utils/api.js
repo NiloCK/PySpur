@@ -7,13 +7,14 @@ const API_BASE_URL = 'http://localhost:8000';
 export const getNodeTypes = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/node/supported_types/`);
-    console.log('Node Types Response:', response.data);
-    const model = new JSPydanticModel(response.data);
+    return response.data;
+    // console.log('Node Types Response:', response.data);
+    // const model = new JSPydanticModel(response.data);
 
-    // Now just return the processed schema which includes the constraints
-    const schema = model.createObjectFromSchema();
-    console.log('Processed Schema:', schema);
-    return schema;
+    // // Now just return the processed schema which includes the constraints
+    // const schema = model.createObjectFromSchema();
+    // console.log('Processed Schema:', schema);
+    // return schema;
   } catch (error) {
     console.error('Error getting node types:', error);
     throw error;
