@@ -9,11 +9,13 @@ const NodeConfigForm = ({ nodeId }) => {
   const node = useSelector((state) => selectNodeById(state, nodeId));
 
   // Use the custom hook to manage form data and handle changes
-  const { formData, schema, uiSchema, handleChange } = useNodeConfig(nodeId);
+  const { formData, schema, handleChange } = useNodeConfig(nodeId);
 
   if (!node) {
     return <div>Node not found</div>;
   }
+
+  const uiSchema = {};
 
   return (
     <Form

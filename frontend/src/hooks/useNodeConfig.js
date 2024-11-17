@@ -21,9 +21,6 @@ const useNodeConfig = (nodeId) => {
     return nodeTypeObj.config;
   });
 
-  // Define any custom UI schema if needed (optional)
-  const uiSchema = {};
-
   // Handle form data changes
   const handleChange = (e) => {
     const newFormData = e.formData;
@@ -43,7 +40,7 @@ const useNodeConfig = (nodeId) => {
     setFormData(node.data.config_values || {});
   }, [node.data.config_values]);
 
-  return { formData, schema, uiSchema, handleChange };
+  return { formData, schema, handleChange};
 };
 
 export default useNodeConfig;
