@@ -14,6 +14,7 @@ const initialState = {
   projectName: 'Untitled Project',
   workflowInputVariables: {},
   testInputs: [],
+  tasks: [],
 };
 
 const flowSlice = createSlice({
@@ -249,6 +250,9 @@ const flowSlice = createSlice({
       const { id } = action.payload;
       state.testInputs = state.testInputs.filter((input) => input.id !== id);
     },
+    setTasks: (state, action) => {
+      state.tasks = action.payload;
+    },
   },
 });
 
@@ -278,6 +282,7 @@ export const {
   addTestInput,
   updateTestInput,
   deleteTestInput,
+  setTasks,
 } = flowSlice.actions;
 
 export default flowSlice.reducer;

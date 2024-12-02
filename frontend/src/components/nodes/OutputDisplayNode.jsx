@@ -18,7 +18,7 @@ const updateMessageVariables = (message, oldKey, newKey) => {
   return message.replace(regex, `{{${newKey}}}`);
 };
 
-const OutputDisplayNode = ({ id, type, data, position, ...props }) => {
+const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) => {
   const nodeRef = useRef(null);
   const [nodeWidth, setNodeWidth] = useState('auto');
   const [editingField, setEditingField] = useState(null);
@@ -272,7 +272,7 @@ const OutputDisplayNode = ({ id, type, data, position, ...props }) => {
 
       <div
         className={styles.outputDisplayNodeWrapper}
-        style={{ zIndex: props.parentNode ? 1 : 0 }}
+        style={{ zIndex: parentNode ? 1 : 0 }}
       >
         <BaseNode
           id={id}

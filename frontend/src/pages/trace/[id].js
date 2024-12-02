@@ -12,12 +12,13 @@ import { getRunStatus } from '../../utils/api';
 
 const TracePage = () => {
 
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
   const [workflowData, setWorkflowData] = useState(null);
   const [nodeOutputs, setNodeOutputs] = useState({});
   const [workflowId, setWorkflowId] = useState(null);
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     dispatch(fetchNodeTypes());
@@ -30,11 +31,14 @@ const TracePage = () => {
 
         if (data.workflow_version && data.workflow_version.definition) {
           dispatch(setTestInputs(data.workflow_version.definition.test_inputs));
-          if (data.outputs) {
-            setNodeOutputs(data.outputs);
-          }
         }
-
+        if (data.outputs) {
+          setNodeOutputs(data.outputs);
+        }
+        if (data.tasks) {
+          console.log('Setting tasks:', data.tasks);
+          setTasks(data.tasks);
+        }
       } catch (error) {
         console.error('Error fetching run:', error);
       }
@@ -53,7 +57,12 @@ const TracePage = () => {
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Header activePage="workflow" style={{ position: 'sticky', top: 0, zIndex: 10 }} />
         <div style={{ flexGrow: 1 }}>
-          <RunViewFlowCanvas workflowData={workflowData} nodeOutputs={nodeOutputs} workflowID={workflowId} />
+          <RunViewFlowCanvas
+            workflowData={workflowData}
+            nodeOutputs={nodeOutputs}
+            workflowID={workflowId}
+            tasks={tasks}
+          />
         </div>
       </div>
     </PersistGate>

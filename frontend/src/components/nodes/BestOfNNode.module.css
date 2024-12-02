@@ -1,0 +1,21 @@
+.bestOfNNodeWrapper {
+    position: relative;
+  }
+  
+  .nodeWrapper {
+    padding: 10px;
+  }
+  
+  .subworkflowContainer {
+    display: flex;
+  }
+  
+  .subworkflowColumn {
+    flex: 1;
+    margin: 0 5px;
+  }
+  
+  .subNode {
+    margin-bottom: 10px;
+  }
+  

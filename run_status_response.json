@@ -1,0 +1,486 @@
+{
+    "id": "R2",
+    "status": "COMPLETED",
+    "start_time": "2024-12-02T07:55:30.860535",
+    "end_time": "2024-12-02T07:55:33.676037",
+    "tasks": [
+      {
+        "node_id": "input_node",
+        "status": "COMPLETED",
+        "inputs": {
+          "input_field_1": "<p>Give me a knock knock joke.</p>"
+        },
+        "outputs": {
+          "input_field_1": "<p>Give me a knock knock joke.</p>"
+        },
+        "run_time": 3224.276776,
+        "subworkflow": null,
+        "subworkflow_output": null
+      },
+      {
+        "node_id": "node_1733123586577",
+        "status": "COMPLETED",
+        "inputs": {
+          "user_input": "<p>Give me a knock knock joke.</p>"
+        },
+        "outputs": {
+          "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+        },
+        "run_time": 3227.021209,
+        "subworkflow": {
+          "nodes": [
+            {
+              "id": "input_node",
+              "title": "",
+              "node_type": "InputNode",
+              "config": {
+                "input_schema": {
+                  "user_input": "str"
+                },
+                "output_schema": {
+                  "user_input": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "generation_node_0",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 150,
+                  "temperature": 0.7,
+                  "top_p": 1
+                },
+                "system_message": "You are a helpful assistant.",
+                "user_message": "{{ user_input }}",
+                "input_schema": {
+                  "user_input": "str"
+                },
+                "output_schema": {
+                  "response": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "rating_node_0",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 16,
+                  "temperature": 0.1,
+                  "top_p": 1
+                },
+                "system_message": "Rate the following response on a scale from 0 to 10, where 0 is poor and 10 is excellent. Consider factors such as relevance, coherence, and helpfulness. Respond with only a number.",
+                "user_message": "response: {{response}}",
+                "input_schema": {
+                  "response": "str"
+                },
+                "output_schema": {
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "jsonify_node_0",
+              "title": "",
+              "node_type": "JsonifyNode",
+              "config": {
+                "input_schema": {
+                  "response": "str",
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "generation_node_1",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 150,
+                  "temperature": 0.7,
+                  "top_p": 1
+                },
+                "system_message": "You are a helpful assistant.",
+                "user_message": "{{ user_input }}",
+                "input_schema": {
+                  "user_input": "str"
+                },
+                "output_schema": {
+                  "response": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "rating_node_1",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 16,
+                  "temperature": 0.1,
+                  "top_p": 1
+                },
+                "system_message": "Rate the following response on a scale from 0 to 10, where 0 is poor and 10 is excellent. Consider factors such as relevance, coherence, and helpfulness. Respond with only a number.",
+                "user_message": "response: {{response}}",
+                "input_schema": {
+                  "response": "str"
+                },
+                "output_schema": {
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "jsonify_node_1",
+              "title": "",
+              "node_type": "JsonifyNode",
+              "config": {
+                "input_schema": {
+                  "response": "str",
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "generation_node_2",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 150,
+                  "temperature": 0.7,
+                  "top_p": 1
+                },
+                "system_message": "You are a helpful assistant.",
+                "user_message": "{{ user_input }}",
+                "input_schema": {
+                  "user_input": "str"
+                },
+                "output_schema": {
+                  "response": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "rating_node_2",
+              "title": "",
+              "node_type": "SingleLLMCallNode",
+              "config": {
+                "llm_info": {
+                  "model": "gpt-4o",
+                  "max_tokens": 16,
+                  "temperature": 0.1,
+                  "top_p": 1
+                },
+                "system_message": "Rate the following response on a scale from 0 to 10, where 0 is poor and 10 is excellent. Consider factors such as relevance, coherence, and helpfulness. Respond with only a number.",
+                "user_message": "response: {{response}}",
+                "input_schema": {
+                  "response": "str"
+                },
+                "output_schema": {
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "jsonify_node_2",
+              "title": "",
+              "node_type": "JsonifyNode",
+              "config": {
+                "input_schema": {
+                  "response": "str",
+                  "rating": "float"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "pick_one_node",
+              "title": "",
+              "node_type": "PickOneNode",
+              "config": {
+                "based_on_key": "rating",
+                "logic": "max",
+                "input_schema": {
+                  "jsonify_node_0": "str",
+                  "jsonify_node_1": "str",
+                  "jsonify_node_2": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "extract_json_node",
+              "title": "",
+              "node_type": "ExtractJsonNode",
+              "config": {
+                "output_schema": {
+                  "response": "str"
+                }
+              },
+              "coordinates": null
+            },
+            {
+              "id": "output_node",
+              "title": "",
+              "node_type": "OutputNode",
+              "config": {
+                "output_schema": {
+                  "response": "str"
+                },
+                "input_schema": {
+                  "response": "str"
+                }
+              },
+              "coordinates": null
+            }
+          ],
+          "links": [
+            {
+              "source_id": "input_node",
+              "source_output_key": "user_input",
+              "target_id": "generation_node_0",
+              "target_input_key": "user_input"
+            },
+            {
+              "source_id": "generation_node_0",
+              "source_output_key": "response",
+              "target_id": "rating_node_0",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "generation_node_0",
+              "source_output_key": "response",
+              "target_id": "jsonify_node_0",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "rating_node_0",
+              "source_output_key": "rating",
+              "target_id": "jsonify_node_0",
+              "target_input_key": "rating"
+            },
+            {
+              "source_id": "input_node",
+              "source_output_key": "user_input",
+              "target_id": "generation_node_1",
+              "target_input_key": "user_input"
+            },
+            {
+              "source_id": "generation_node_1",
+              "source_output_key": "response",
+              "target_id": "rating_node_1",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "generation_node_1",
+              "source_output_key": "response",
+              "target_id": "jsonify_node_1",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "rating_node_1",
+              "source_output_key": "rating",
+              "target_id": "jsonify_node_1",
+              "target_input_key": "rating"
+            },
+            {
+              "source_id": "input_node",
+              "source_output_key": "user_input",
+              "target_id": "generation_node_2",
+              "target_input_key": "user_input"
+            },
+            {
+              "source_id": "generation_node_2",
+              "source_output_key": "response",
+              "target_id": "rating_node_2",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "generation_node_2",
+              "source_output_key": "response",
+              "target_id": "jsonify_node_2",
+              "target_input_key": "response"
+            },
+            {
+              "source_id": "rating_node_2",
+              "source_output_key": "rating",
+              "target_id": "jsonify_node_2",
+              "target_input_key": "rating"
+            },
+            {
+              "source_id": "jsonify_node_0",
+              "source_output_key": "json_string",
+              "target_id": "pick_one_node",
+              "target_input_key": "jsonify_node_0"
+            },
+            {
+              "source_id": "jsonify_node_1",
+              "source_output_key": "json_string",
+              "target_id": "pick_one_node",
+              "target_input_key": "jsonify_node_1"
+            },
+            {
+              "source_id": "jsonify_node_2",
+              "source_output_key": "json_string",
+              "target_id": "pick_one_node",
+              "target_input_key": "jsonify_node_2"
+            },
+            {
+              "source_id": "pick_one_node",
+              "source_output_key": "picked_json_string",
+              "target_id": "extract_json_node",
+              "target_input_key": "json_string"
+            },
+            {
+              "source_id": "extract_json_node",
+              "source_output_key": "response",
+              "target_id": "output_node",
+              "target_input_key": "response"
+            }
+          ],
+          "test_inputs": []
+        },
+        "subworkflow_output": {
+          "input_node": {
+            "user_input": "<p>Give me a knock knock joke.</p>"
+          },
+          "generation_node_1": {
+            "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+          },
+          "generation_node_2": {
+            "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+          },
+          "generation_node_0": {
+            "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+          },
+          "rating_node_2": {
+            "rating": 7
+          },
+          "rating_node_1": {
+            "rating": 3
+          },
+          "jsonify_node_2": {
+            "json_string": "{\"response\": \"Knock, knock.\\nWho's there?\\nLettuce.\\nLettuce who?\\nLettuce in, it's freezing out here!\", \"rating\": 7.0}"
+          },
+          "jsonify_node_1": {
+            "json_string": "{\"response\": \"Knock, knock.\\nWho's there?\\nLettuce.\\nLettuce who?\\nLettuce in, it's freezing out here!\", \"rating\": 3.0}"
+          },
+          "rating_node_0": {
+            "rating": 7
+          },
+          "jsonify_node_0": {
+            "json_string": "{\"response\": \"Knock, knock.\\nWho's there?\\nLettuce.\\nLettuce who?\\nLettuce in, it's freezing out here!\", \"rating\": 7.0}"
+          },
+          "pick_one_node": {
+            "picked_json_string": "{\"response\": \"Knock, knock.\\nWho's there?\\nLettuce.\\nLettuce who?\\nLettuce in, it's freezing out here!\", \"rating\": 7.0}",
+            "picked_input_key": "jsonify_node_0"
+          },
+          "extract_json_node": {
+            "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+          },
+          "output_node": {
+            "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+          }
+        }
+      }
+    ],
+    "outputs": {
+      "input_node": {
+        "input_field_1": "<p>Give me a knock knock joke.</p>"
+      },
+      "node_1733123586577": {
+        "response": "Knock, knock.\nWho's there?\nLettuce.\nLettuce who?\nLettuce in, it's freezing out here!"
+      }
+    },
+    "output_file_id": null,
+    "workflow_id": "S1",
+    "workflow_version_id": 2,
+    "workflow_version": {
+      "version": 2,
+      "name": "New Spur 02/12/2024, 12:32:31",
+      "description": "",
+      "definition": {
+        "nodes": [
+          {
+            "id": "input_node",
+            "title": "",
+            "node_type": "InputNode",
+            "config": {
+              "input_schema": {
+                "input_field_1": "str"
+              }
+            },
+            "coordinates": {
+              "x": 100,
+              "y": 100
+            }
+          },
+          {
+            "id": "node_1733123586577",
+            "title": "",
+            "node_type": "BestOfNNode",
+            "config": {
+              "title": "BestOfNNodeConfig",
+              "type": "object",
+              "input_schema": {
+                "user_input": "str"
+              },
+              "output_schema": {
+                "response": "str"
+              },
+              "llm_info": {
+                "model": "gpt-4o",
+                "max_tokens": 16384,
+                "temperature": 0.7,
+                "top_p": 1
+              },
+              "system_message": "You are a helpful assistant.",
+              "user_message": "{{ user_input }}",
+              "few_shot_examples": null,
+              "samples": 3,
+              "rating_prompt": "Rate the following response on a scale from 0 to 10, where 0 is poor and 10 is excellent. Consider factors such as relevance, coherence, and helpfulness. Respond with only a number."
+            },
+            "coordinates": {
+              "x": 637.5,
+              "y": 265
+            }
+          }
+        ],
+        "links": [
+          {
+            "source_id": "input_node",
+            "source_output_key": "input_field_1",
+            "target_id": "node_1733123586577",
+            "target_input_key": "user_input"
+          }
+        ],
+        "test_inputs": [
+          {
+            "id": 1733123002103,
+            "input_field_1": "<p>Give me a roadmap to become quant engineer.</p>"
+          }
+        ]
+      },
+      "definition_hash": "7e54e01009c62e39b0949d70b135002f817ca4c7d145948aed48e79f2d0bb6ee",
+      "created_at": "2024-12-02T07:01:51.591965",
+      "updated_at": "2024-12-02T07:01:51.592107"
+    }
+  }

@@ -17,39 +17,41 @@ import NodeSidebar from '../nodes/nodeSidebar/NodeSidebar';
 import { Dropdown, DropdownMenu, DropdownSection, DropdownItem } from '@nextui-org/react';
 import { v4 as uuidv4 } from 'uuid';
 import { addNodeBetweenNodes } from './AddNodePopoverCanvas';
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'; 
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import CustomEdge from './edges/CustomEdge';
 import { getHelperLines } from '../../utils/helperLines';
 import HelperLinesRenderer from '../HelperLines';
 import useCopyPaste from '../../utils/useCopyPaste';
 import { useModeStore } from '../../store/modeStore';
-import { initializeFlow, setNodeOutputs } from '../../store/flowSlice'; 
+import { initializeFlow, setNodeOutputs, setTasks } from '../../store/flowSlice';
 import InputNode from '../nodes/InputNode';
-import LoadingSpinner from '../LoadingSpinner'; 
+import LoadingSpinner from '../LoadingSpinner';
 import ConditionalNode from '../nodes/ConditionalNode';
 import dagre from '@dagrejs/dagre';
-import OutputDisplayNode from '../nodes/OutputDispalyNode';
+import OutputDisplayNode from '../nodes/OutputDisplayNode';
+import BestOfNNode from '../nodes/BestOfNNode';
 
 const useNodeTypes = ({ nodeTypesConfig }) => {
   const nodeTypes = useMemo(() => {
     if (!nodeTypesConfig) return {};
     const types = Object.keys(nodeTypesConfig).reduce((acc, category) => {
-      nodeTypesConfig[category].forEach(node => {
+      nodeTypesConfig[category].forEach((node) => {
         if (node.name === 'InputNode') {
           acc[node.name] = InputNode;
         } else if (node.name === 'ConditionalNode') {
           acc[node.name] = ConditionalNode;
+        } else if (node.name === 'BestOfNNode') {
+          acc[node.name] = BestOfNNode; // Map BestOfNNode to your component
         } else {
-          acc[node.name] = (props) => {
-            return <OutputDisplayNode {...props} type={node.name} />;
-          };
+          acc[node.name] = (props) => (
+            <OutputDisplayNode {...props} type={node.name} />
+          );
         }
       });
       return acc;
     }, {});
 
     return types;
-  
   }, [nodeTypesConfig]);
 
   const isLoading = !nodeTypesConfig;
@@ -62,7 +64,7 @@ const edgeTypes = {
 
 // Create a wrapper component that includes ReactFlow logic
 const RunViewFlowCanvasContent = (props) => {
-  const { workflowData, workflowID, nodeOutputs } = props;
+  const { workflowData, workflowID, nodeOutputs, tasks } = props;
 
   const dispatch = useDispatch();
 
@@ -87,12 +89,29 @@ const RunViewFlowCanvasContent = (props) => {
         }
       }
       dispatch(initializeFlow({ nodeTypes: nodeTypesConfig, ...workflowData, workflowID }));
-      console.log('Node Outputs:', nodeOutputs);
-      dispatch(setNodeOutputs(nodeOutputs));
+      let combinedNodeOutputs = { ...nodeOutputs };
 
+      if (tasks) {
+        tasks.forEach((task) => {
+          if (task.subworkflow_output) {
+            combinedNodeOutputs = { ...combinedNodeOutputs, ...task.subworkflow_output };
+          }
+        });
+      }
+      dispatch(setNodeOutputs(combinedNodeOutputs));
+      console.log('Node Outputs:', nodeOutputs_);
+
+      if (tasks) {
+        dispatch(setTasks(tasks));
+      }
+      console.log('Tasks:', tasks_);
     }
 
   }, [dispatch, workflowData, workflowID]);
+
+  const nodeOutputs_ = useSelector((state) => state.flow.nodeOutputs);
+
+  const tasks_ = useSelector((state) => state.flow.tasks);
 
   const { nodeTypes, isLoading } = useNodeTypes({ nodeTypesConfig });
 
@@ -574,7 +593,7 @@ const RunViewFlowCanvasContent = (props) => {
                 vertical={helperLines.vertical}
               />
             )}
-            <Operator handleLayout={handleLayout}/>
+            <Operator handleLayout={handleLayout} />
           </ReactFlow>
         </div>
         {selectedNodeID && (
@@ -591,10 +610,10 @@ const RunViewFlowCanvasContent = (props) => {
 };
 
 // Main component that provides the ReactFlow context
-const RunViewFlowCanvas = ({ workflowData, workflowID, nodeOutputs }) => {
+const RunViewFlowCanvas = ({ workflowData, workflowID, nodeOutputs, tasks }) => {
   return (
     <ReactFlowProvider>
-      <RunViewFlowCanvasContent workflowData={workflowData} workflowID={workflowID} nodeOutputs={nodeOutputs} />
+      <RunViewFlowCanvasContent workflowData={workflowData} workflowID={workflowID} nodeOutputs={nodeOutputs} tasks={tasks} />
     </ReactFlowProvider>
   );
 };
