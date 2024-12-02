@@ -25,7 +25,9 @@ const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) =
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const node = useSelector((state) => state.flow.nodes.find((n) => n.id === id));
+  console.log('Node_OutputNodeDisplay:', node);
   const nodeData = data || (node && node.data);
+  console.log('Node_OutputNodeDisplay:', nodeData);
   const dispatch = useDispatch();
 
   const edges = useSelector((state) => state.flow.edges);
@@ -305,7 +307,7 @@ const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) =
             >
               {node ? (
                 <div>
-                  <NodeOutputDisplay node={node} />
+                  <NodeOutputDisplay node={node} data={nodeData} />
                 </div>
               ) : (
                 <div>No data available for this node</div>
@@ -319,6 +321,7 @@ const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) =
         onOpenChange={setIsModalOpen}
         title={data?.config?.title || data?.title || 'Node Output'}
         node={node}
+        data={nodeData}
       />
     </>
   );

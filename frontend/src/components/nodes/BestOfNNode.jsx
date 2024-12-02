@@ -14,30 +14,27 @@ const BestOfNNode = ({ id, data, ...props }) => {
   // Get the task associated with this node
   const task = tasks.find((t) => t.node_id === id);
 
-  console.log('BestOfNNode - Node ID:', id);
-  console.log('BestOfNNode - Task:', task);
-
   // Extract subworkflow and outputs
   const subworkflow = task?.subworkflow;
   const subworkflowOutput = task?.subworkflow_output;
-
-  console.log('BestOfNNode - Subworkflow:', subworkflow);
-  console.log('BestOfNNode - Subworkflow Output:', subworkflowOutput);
 
   const [subNodes, setSubNodes] = useState([]);
 
   useEffect(() => {
     if (subworkflow) {
       const nodes = subworkflow.nodes.map((node) => {
-        console.log('Processing subworkflow node:', node);
+        // Prepare node data and outputs
+        const nodeOutputs = subworkflowOutput?.[node.id];
+        console.log('Node Outputs:', nodeOutputs);
+
         return {
           ...node,
           id: node.id,
           data: {
             ...node.config,
-            title: node.title,
+            title: node.title || node.node_type,
             config: node.config,
-            run: subworkflowOutput[node.id],
+            run: nodeOutputs, // Pass outputs here
           },
           position: node.coordinates || { x: 0, y: 0 },
           type: node.node_type,
@@ -45,13 +42,10 @@ const BestOfNNode = ({ id, data, ...props }) => {
           extent: 'parent',
         };
       });
-
-      console.log('BestOfNNode - SubNodes:', nodes);
+      console.log('SubNodes:', nodes);
       setSubNodes(nodes);
-    } else {
-      console.log('BestOfNNode - No subworkflow found for this node.');
     }
-  }, [subworkflow, id]);
+  }, [subworkflow, subworkflowOutput, id]);
 
   // Group nodes by type
   const groupedNodes = {};
@@ -62,8 +56,6 @@ const BestOfNNode = ({ id, data, ...props }) => {
     }
     groupedNodes[nodeType].push(node);
   });
-
-  console.log('BestOfNNode - Grouped Nodes:', groupedNodes);
 
   return (
     <div className={styles.bestOfNNodeWrapper}>
@@ -101,7 +93,6 @@ const BestOfNNode = ({ id, data, ...props }) => {
             </div>
           )}
         </div>
-        
       </BaseNode>
     </div>
   );

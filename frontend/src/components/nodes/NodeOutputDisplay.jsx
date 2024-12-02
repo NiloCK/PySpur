@@ -2,9 +2,12 @@ import React from 'react';
 import Markdown from 'react-markdown';
 
 const NodeOutputDisplay = (props) => {
-    const { node } = props;
+    const { node, data } = props;
     const nodeID = node?.id;
-    const output = node?.data?.run;
+    const output = data?.run || node?.data?.run;
+    console.log('NodeOutputDisplay:', output, node);
+    console.log('NodeOutputDisplay data:', data);
+
 
     return (
         <div>
