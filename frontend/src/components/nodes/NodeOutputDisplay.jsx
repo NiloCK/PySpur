@@ -3,7 +3,6 @@ import Markdown from 'react-markdown';
 
 const NodeOutputDisplay = (props) => {
     const { node, data } = props;
-    const nodeID = node?.id;
     const output = data?.run || node?.data?.run;
 
 
