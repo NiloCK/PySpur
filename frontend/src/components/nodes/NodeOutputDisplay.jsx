@@ -5,8 +5,6 @@ const NodeOutputDisplay = (props) => {
     const { node, data } = props;
     const nodeID = node?.id;
     const output = data?.run || node?.data?.run;
-    console.log('NodeOutputDisplay:', output, node);
-    console.log('NodeOutputDisplay data:', data);
 
 
     return (
@@ -17,7 +15,7 @@ const NodeOutputDisplay = (props) => {
                         <div key={key} className="my-2 flex flex-col items-start">
                             <label className="text-sm font-semibold mb-1 block">{key}:</label>
                             <div className="ml-2 mt-auto">
-                                <Markdown>{value}</Markdown>
+                                <Markdown>{String(value)}</Markdown>
                             </div>
                         </div>
                     ))}

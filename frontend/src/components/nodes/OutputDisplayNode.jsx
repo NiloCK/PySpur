@@ -25,9 +25,7 @@ const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) =
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const node = useSelector((state) => state.flow.nodes.find((n) => n.id === id));
-  console.log('Node_OutputNodeDisplay:', node);
   const nodeData = data || (node && node.data);
-  console.log('Node_OutputNodeDisplay:', nodeData);
   const dispatch = useDispatch();
 
   const edges = useSelector((state) => state.flow.edges);
@@ -305,9 +303,9 @@ const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) =
                 e.preventDefault();
               }}
             >
-              {node ? (
+              {node || nodeData ? (
                 <div>
-                  <NodeOutputDisplay node={node} data={nodeData} />
+                  <NodeOutputDisplay node={node} data={nodeData} />          
                 </div>
               ) : (
                 <div>No data available for this node</div>

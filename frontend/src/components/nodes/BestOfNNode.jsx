@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import BaseNode from './BaseNode';
 import OutputDisplayNode from './OutputDisplayNode';
 import styles from './BestOfNNode.module.css';
+import { nodesChange } from '../../store/flowSlice';
 
 const BestOfNNode = ({ id, data, ...props }) => {
+  const dispatch = useDispatch();
   const nodeRef = useRef(null);
   const [nodeWidth, setNodeWidth] = useState('auto');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -19,10 +21,11 @@ const BestOfNNode = ({ id, data, ...props }) => {
   const subworkflowOutput = task?.subworkflow_output;
 
   const [subNodes, setSubNodes] = useState([]);
+  const nodes = useSelector((state) => state.flow.nodes);
 
   useEffect(() => {
     if (subworkflow) {
-      const nodes = subworkflow.nodes.map((node) => {
+      const subnodes = subworkflow.nodes.map((node) => {
         // Prepare node data and outputs
         const nodeOutputs = subworkflowOutput?.[node.id];
         console.log('Node Outputs:', nodeOutputs);
@@ -42,8 +45,8 @@ const BestOfNNode = ({ id, data, ...props }) => {
           extent: 'parent',
         };
       });
-      console.log('SubNodes:', nodes);
-      setSubNodes(nodes);
+      console.log('Subworkflow Nodes:', subnodes);
+      setSubNodes(subnodes);
     }
   }, [subworkflow, subworkflowOutput, id]);
 
