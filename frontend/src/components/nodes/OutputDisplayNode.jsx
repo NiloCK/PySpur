@@ -18,14 +18,22 @@ const updateMessageVariables = (message, oldKey, newKey) => {
   return message.replace(regex, `{{${newKey}}}`);
 };
 
-const OutputDisplayNode = ({ id, type, data, position, parentNode, ...props }) => {
+const OutputDisplayNode = ({ id, type, data, position, subNode, parentNode, ...props }) => {
   const nodeRef = useRef(null);
   const [nodeWidth, setNodeWidth] = useState('auto');
   const [editingField, setEditingField] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const node = useSelector((state) => state.flow.nodes.find((n) => n.id === id));
-  const nodeData = data || (node && node.data);
+  // Use data from subNode if available
+  const nodeData = subNode?.data || data;
+
+  // Use node from Redux store if subNode is not provided
+  const nodeFromRedux = useSelector((state) => state.flow.nodes.find((n) => n.id === id));
+  const node = subNode || nodeFromRedux;
+
+  // Get node outputs
+  let outputs = nodeData?.outputs;
+
   const dispatch = useDispatch();
 
   const edges = useSelector((state) => state.flow.edges);
