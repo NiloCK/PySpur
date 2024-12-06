@@ -75,6 +75,13 @@ SUPPORTED_NODE_TYPES = {
             "class_name": "TreeOfThoughtsNode",
         },
     ],
+    "loops": [
+        {
+            "node_type_name": "FixedIterationLoopNode",
+            "module": ".nodes.loops.fixed_iteration_loop",
+            "class_name": "FixedIterationLoopNode",
+        },
+    ],
     "python": [
         {
             "node_type_name": "PythonFuncNode",
