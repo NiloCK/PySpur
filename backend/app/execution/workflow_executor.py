@@ -110,6 +110,8 @@ class WorkflowExecutor:
         return task
 
     async def _execute_node(self, node_id: str):
+        if node_id in self._outputs:
+            return
         node = self._node_dict[node_id]
         node_executor = NodeExecutor(node)
 
