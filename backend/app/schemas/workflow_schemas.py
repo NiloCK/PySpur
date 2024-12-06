@@ -21,6 +21,7 @@ class WorkflowNodeSchema(BaseModel):
     """
 
     id: str  # ID in the workflow
+    parent_id: Optional[str] = None  # ID of the parent node
     title: Optional[str] = ""  # Display name
     node_type: str  # Name of the node type
     config: Dict[str, Any] = {}  # Configuration parameters
@@ -65,7 +66,11 @@ class WorkflowDefinitionSchema(BaseModel):
 
     @field_validator("nodes")
     def must_have_one_and_only_one_input_node(cls, v: List[WorkflowNodeSchema]):
-        input_nodes = [node for node in v if node.node_type == "InputNode"]
+        input_nodes = [
+            node
+            for node in v
+            if node.node_type == "InputNode" and node.parent_id is None
+        ]
         if len(input_nodes) != 1:
             raise ValueError("Workflow must have exactly one input node.")
         return v
