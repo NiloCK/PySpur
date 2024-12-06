@@ -217,9 +217,10 @@ class WorkflowExecutor:
                     self._node_dict[node_id]
                 ).node_instance.output_model.model_validate(partial_outputs[node_id])
                 for node_id in partial_outputs.keys()
+                if node_id in self._node_dict
             }
 
-        nodes_to_be_run: Set[str] = set()
+        nodes_to_be_run: Set[str] = set([node_id])
         if rerun_predecessors:
             predecessor_ids = self._dependencies.get(node_id, set())
             for predecessor_id in predecessor_ids:
@@ -227,8 +228,6 @@ class WorkflowExecutor:
                     self._outputs.pop(predecessor_id, None)
                     self._node_tasks.pop(predecessor_id, None)
                     nodes_to_be_run.add(predecessor_id)
-        else:
-            nodes_to_be_run = {node_id}
 
         for node_id in nodes_to_be_run:
             self._get_node_task(node_id)
