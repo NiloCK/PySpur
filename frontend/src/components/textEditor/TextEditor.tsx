@@ -33,10 +33,10 @@ interface AIVersion {
 }
 
 const mockAIVersions: AIVersion[] = [
-  { id: '1', content: 'First AI generated version with some interesting variations and different wording.' },
-  { id: '2', content: 'Second version that takes a completely different approach to express the same idea.' },
-  { id: '3', content: 'Third iteration with more formal and professional tone.' },
-  { id: '4', content: 'Fourth alternative that adds more creative elements to the original text.' },
+  { id: '1', content: 'You are a senior ML research director at a top AI lab, evaluating both published papers and novel research proposals. Your task is to analyze the theoretical foundations, practical implications, and potential breakthroughs of each idea. Select the proposal with the highest potential for meaningful advancement in the field, then reconstruct it to maximize both its scientific rigor and real-world applicability. Consider computational efficiency, data requirements, and scaling potential in your analysis.' },
+  { id: '2', content: 'As a distinguished machine learning scientist specializing in research synthesis, examine this collection of existing ML papers and a new research direction. Your mission is to identify the idea with the most innovative potential, whether published or novel. Once selected, transform this core concept by incorporating recent technical advances, addressing known limitations, and expanding its possible applications. Your reimagined version should push the boundaries of current ML capabilities while remaining technically feasible.' },
+  { id: '3', content: 'Taking on the role of an experienced ML research architect, evaluate these machine learning papers and a proposed new direction. Your objective is to identify which approach offers the best balance of theoretical novelty and practical implementation potential. After selection, redesign the chosen concept to enhance its robustness, reduce computational complexity, and improve its chances of successful deployment. Consider both academic impact and industrial applications in your analysis.' },
+  { id: '4', content: 'Position yourself as a machine learning research strategist tasked with solving pressing challenges in the field. Review these ML papers and a new research concept, focusing on their potential to address significant open problems. Select the most promising direction based on its fundamental soundness and transformative potential. Then, reconstruct the chosen approach to maximize its problem-solving capabilities while ensuring mathematical rigor and experimental validity.' },
 ];
 
 const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({
