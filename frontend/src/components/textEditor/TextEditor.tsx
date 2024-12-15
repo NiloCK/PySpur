@@ -7,7 +7,7 @@ import Underline from "@tiptap/extension-underline";
 import { Color } from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
 import ListItem from "@tiptap/extension-list-item";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Skeleton, Card, CardBody } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import { List, ListOrdered } from "lucide-react";
 import styles from "./TextEditor.module.css";
@@ -26,6 +26,18 @@ interface TextEditorProps {
 interface TextEditorRef {
   insertAtCursor: (text: string) => void;
 }
+
+interface AIVersion {
+  id: string;
+  content: string;
+}
+
+const mockAIVersions: AIVersion[] = [
+  { id: '1', content: 'First AI generated version with some interesting variations and different wording.' },
+  { id: '2', content: 'Second version that takes a completely different approach to express the same idea.' },
+  { id: '3', content: 'Third iteration with more formal and professional tone.' },
+  { id: '4', content: 'Fourth alternative that adds more creative elements to the original text.' },
+];
 
 const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({
   content,
@@ -174,6 +186,25 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({
     );
   };
 
+  const { isOpen: isAIModalOpen, onOpen: onAIModalOpen, onOpenChange: onAIModalOpenChange } = useDisclosure();
+  const [isLoadingVersions, setIsLoadingVersions] = React.useState(false);
+  const [aiVersions, setAiVersions] = React.useState<AIVersion[]>([]);
+
+  const handleAIRewrite = () => {
+    setIsLoadingVersions(true);
+    onAIModalOpen();
+
+    setTimeout(() => {
+      setAiVersions(mockAIVersions);
+      setIsLoadingVersions(false);
+    }, 2000);
+  };
+
+  const handleVersionSelect = (version: AIVersion) => {
+    setContent(version.content);
+    onAIModalOpenChange(false);
+  };
+
   const renderToolbar = (editorInstance: Editor | null, isFullScreen = false) => {
     if (!editorInstance) return null;
 
@@ -231,6 +262,15 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({
             isIconOnly
           >
             <ListOrdered className={buttonClassName} />
+          </Button>
+          <Button
+            onPress={handleAIRewrite}
+            color="secondary"
+            variant="flat"
+            size={buttonSize}
+            isIconOnly
+          >
+            <Icon icon="solar:magic-stick-3-linear" className={buttonClassName} />
           </Button>
         </div>
         {renderVariableButtons(editorInstance)}
@@ -295,6 +335,60 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({
                 </Button>
                 <Button color="primary" onPress={() => handleSave(onClose)}>
                   Save
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={isAIModalOpen}
+        onOpenChange={onAIModalOpenChange}
+        size="4xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                AI Generated Versions
+              </ModalHeader>
+              <ModalBody>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                  {isLoadingVersions ? (
+                    Array(4).fill(null).map((_, index) => (
+                      <div key={index} className="flex flex-col gap-2 p-4 border rounded-lg">
+                        <Skeleton className="w-4/5 rounded-lg">
+                          <div className="h-4 rounded-lg bg-default-200" />
+                        </Skeleton>
+                        <Skeleton className="w-full rounded-lg">
+                          <div className="h-20 rounded-lg bg-default-200" />
+                        </Skeleton>
+                      </div>
+                    ))
+                  ) : (
+                    aiVersions.map((version) => (
+                      <Card
+                        key={version.id}
+                        isPressable
+                        onPress={() => handleVersionSelect(version)}
+                        className="border-2 hover:border-primary transition-colors"
+                      >
+                        <CardBody className="gap-2">
+                          <p className="font-semibold text-primary">Version {version.id}</p>
+                          <p className="text-sm text-default-600 line-clamp-4">
+                            {version.content}
+                          </p>
+                        </CardBody>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Cancel
                 </Button>
               </ModalFooter>
             </>
