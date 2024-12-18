@@ -23,11 +23,15 @@ import {
 import { Icon } from '@iconify/react';
 import { getWorkflows, createWorkflow, uploadDataset, startBatchRun, deleteWorkflow, getTemplates, instantiateTemplate, duplicateWorkflow, listApiKeys, getApiKey } from '../utils/api';
 import { useRouter } from 'next/router';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 import TemplateCard from './cards/TemplateCard';
 import WorkflowBatchRunsTable from './WorkflowBatchRunsTable';
+import WelcomeModal from './modals/WelcomeModal';
 import { Template } from '../types/workflow';
 import { WorkflowCreateRequest, WorkflowDefinition, WorkflowResponse } from '@/types/api_types/workflowSchemas';
 import { ApiKey } from '../utils/api';
+
 
 const Dashboard: React.FC = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -35,23 +39,25 @@ const Dashboard: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const router = useRouter();
-
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const hasSeenWelcome = useSelector((state: RootState) => state.userPreferences.hasSeenWelcome);
 
   useEffect(() => {
     const fetchWorkflows = async () => {
       try {
         const workflows = await getWorkflows();
         setWorkflows(workflows as WorkflowResponse[]);
+        setShowWelcome(!hasSeenWelcome && workflows.length === 0);
       } catch (error) {
         console.error('Error fetching workflows:', error);
       }
     };
 
     fetchWorkflows();
-  }, []);
+  }, [hasSeenWelcome]);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -227,6 +233,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-2">
+      <WelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
       <div className="w-3/4 mx-auto p-5">
         {/* Dashboard Header */}
         <header className="mb-6 flex w-full items-center flex-col gap-2">
