@@ -18,6 +18,10 @@ import {
   extendVariants,
   Switch,
   cn,
+  Listbox,
+  ListboxItem,
+  ScrollShadow,
+  Chip,
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import { listApiKeys, setApiKey, getApiKey, deleteApiKey } from "../../utils/api";
@@ -209,6 +213,140 @@ function APIKeys(props: CardProps) {
   );
 }
 
+// Add Ollama Models type and data
+const ollamaModels = [
+  {
+    id: "llama3.3",
+    name: "Llama 3 (8B)",
+    description: "Latest Llama 3 model (8B parameters)",
+    installed: false,
+  },
+  {
+    id: "llama3.2",
+    name: "Llama 3.2 (8B)",
+    description: "Llama 3.2 model (8B parameters)",
+    installed: false,
+  },
+  {
+    id: "llama3.2-1b",
+    name: "Llama 3.2 (1B)",
+    description: "Lightweight Llama 3.2 model (1B parameters)",
+    installed: false,
+  },
+  {
+    id: "gemma2",
+    name: "Gemma 2",
+    description: "Google's Gemma 2 model",
+    installed: false,
+  },
+  {
+    id: "gemma2-2b",
+    name: "Gemma 2 (2B)",
+    description: "Lightweight Gemma 2 model (2B parameters)",
+    installed: false,
+  },
+  {
+    id: "mistral",
+    name: "Mistral",
+    description: "Mistral base model",
+    installed: false,
+  },
+  {
+    id: "codellama",
+    name: "CodeLlama",
+    description: "Specialized model for code generation",
+    installed: false,
+  },
+  {
+    id: "mixtral",
+    name: "Mixtral 8x7B",
+    description: "Mixtral 8x7B instruction model",
+    installed: false,
+  },
+];
+
+// Add OllamaModels Component
+function OllamaModels(props: CardProps) {
+  const [selectedModels, setSelectedModels] = React.useState(new Set<string>([]));
+  const [isOllamaEnabled, setIsOllamaEnabled] = React.useState(false);
+
+  const arrayValues = Array.from(selectedModels);
+
+  const topContent = React.useMemo(() => {
+    if (!arrayValues.length) {
+      return null;
+    }
+
+    return (
+      <ScrollShadow
+        hideScrollBar
+        className="w-full flex py-0.5 px-2 gap-1"
+        orientation="horizontal"
+      >
+        {arrayValues.map((value) => (
+          <Chip key={value}>
+            {ollamaModels.find((model) => model.id === value)?.name}
+          </Chip>
+        ))}
+      </ScrollShadow>
+    );
+  }, [arrayValues]);
+
+  return (
+    <Card className="max-w-xl p-2" {...props}>
+      <CardBody className="grid grid-cols-1 gap-4">
+        <SwitchCell
+          label="Enable Ollama"
+          description="Enable Ollama local model support"
+          isSelected={isOllamaEnabled}
+          onValueChange={setIsOllamaEnabled}
+        />
+
+        {isOllamaEnabled && (
+          <div className="w-full border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
+            <Listbox
+              classNames={{
+                base: "max-w-full",
+                list: "max-h-[300px] overflow-scroll",
+              }}
+              items={ollamaModels}
+              label="Select models to install"
+              selectionMode="multiple"
+              topContent={topContent}
+              variant="flat"
+              onSelectionChange={setSelectedModels}
+            >
+              {(item) => (
+                <ListboxItem key={item.id} textValue={item.name}>
+                  <div className="flex flex-col">
+                    <span className="text-small">{item.name}</span>
+                    <span className="text-tiny text-default-400">
+                      {item.description}
+                    </span>
+                  </div>
+                </ListboxItem>
+              )}
+            </Listbox>
+          </div>
+        )}
+      </CardBody>
+      {isOllamaEnabled && arrayValues.length > 0 && (
+        <CardFooter>
+          <Button
+            className="bg-primary text-white"
+            onPress={() => {
+              // TODO: Implement model installation
+              console.log("Installing models:", arrayValues);
+            }}
+          >
+            Install Selected Models
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
+  );
+}
+
 // Main SettingsModal Component
 export default function SettingsModal(props: CardProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -264,6 +402,18 @@ export default function SettingsModal(props: CardProps) {
                       }
                     >
                       <APIKeys className="p-2 shadow-none" />
+                    </Tab>
+                    <Tab
+                      key="ollama"
+                      textValue="Ollama"
+                      title={
+                        <div className="flex items-center gap-1.5">
+                          <Icon icon="solar:server-bold" width={20} />
+                          <p>Ollama</p>
+                        </div>
+                      }
+                    >
+                      <OllamaModels className="p-2 shadow-none" />
                     </Tab>
                   </Tabs>
                 </Card>
