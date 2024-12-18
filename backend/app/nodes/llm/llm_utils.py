@@ -45,13 +45,17 @@ class LLMModels(str, Enum):
     OLLAMA_CODELLAMA = "ollama/codellama"
     OLLAMA_MIXTRAL = "ollama/mixtral-8x7b-instruct-v0.1"
 
+MODELS_THAT_SUPPORT_JSON_RESPONSE = [
+    LLMModels.GPT_4O,
+    LLMModels.GPT_4_TURBO,
+    LLMModels.CHATGPT_4O_LATEST,
+    LLMModels.O1_MINI,
+    LLMModels.O1_PREVIEW,
+]
 
 class ModelInfo(BaseModel):
     model: LLMModels = Field(
         LLMModels.GPT_4O, description="The LLM model to use for completion"
-    )
-    api_base: Optional[str] = Field(
-        None, description="API base URL for model provider (required for Ollama models)"
     )
     max_tokens: Optional[int] = Field(
         ...,
@@ -191,10 +195,14 @@ async def generate_text(
         "messages": messages,
         "temperature": temperature,
     }
-    if json_mode:
+    if json_mode and model_name in MODELS_THAT_SUPPORT_JSON_RESPONSE:
         kwargs["response_format"] = {"type": "json_object"}
-    if api_base:
-        kwargs["api_base"] = api_base
+    
+    # Use the new API base for Ollama models
+    if model_name.startswith('ollama/'):
+        kwargs["api_base"] = "http://host.docker.internal:11555"
+        
+        
     response = await completion_with_backoff(**kwargs)
     return cast(str, response)
 
