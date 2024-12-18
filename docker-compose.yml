@@ -12,12 +12,25 @@ services:
       - backend
       - frontend
     restart: always
+
+  ollama_proxy:
+    image: nginx:latest
+    network_mode: host
+    ports:
+      - "11555:11555"
+    volumes:
+      - ./nginx/ollama.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+
   backend:
     build: ./backend
     command: bash /pyspur/entrypoint.sh
     volumes:
       - ./backend:/pyspur
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   frontend:
     build: ./frontend
     command: npm run dev
@@ -27,5 +40,6 @@ services:
     depends_on:
       - backend
     restart: always
+
 volumes:
   node_modules:
