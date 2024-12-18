@@ -77,11 +77,15 @@ class SingleLLMCallNode(VariableOutputBaseNode):
             "temperature": self.config.llm_info.temperature,
             "json_mode": True,
         }
-        if self.config.llm_info.api_base:
-            kwargs["api_base"] = self.config.llm_info.api_base
         assistant_message = await generate_text(**kwargs)
-        assistant_message = json.loads(assistant_message)
-        assistant_message = self.output_model.model_validate(assistant_message)
+        try:
+            assistant_message = json.loads(assistant_message)
+            assistant_message = self.output_model.model_validate(assistant_message)
+        except json.JSONDecodeError:
+            # if there is only one field in the output schema, and that is a string, we can try to parse the output as a string
+            if len(output_schema) == 1 and list(output_schema.values())[0] == "str":
+                assistant_message = {list(output_schema.keys())[0]: assistant_message}
+                assistant_message = self.output_model.model_validate(assistant_message)
         return assistant_message
 
 
