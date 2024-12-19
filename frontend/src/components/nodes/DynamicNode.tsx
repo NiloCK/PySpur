@@ -9,6 +9,9 @@ import { Input } from '@nextui-org/react';
 import {
   updateNodeData,
   updateEdgesOnHandleRename,
+  selectNodeById,
+  selectNodeData,
+  selectEdges,
 } from '../../store/flowSlice';
 import { selectPropertyMetadata } from '../../store/nodeTypesSlice';
 import { RootState } from '../../store/store';
@@ -56,12 +59,11 @@ const DynamicNode: React.FC<DynamicNodeProps> = ({ id, type, data, position, dis
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const node = useSelector((state: RootState) => state.flow.nodes.find((n) => n.id === id));
-  const nodes = useSelector((state: RootState) => state.flow.nodes);
-  const nodeData = data || (node && node.data);
   const dispatch = useDispatch();
-
-  const edges = useSelector((state: RootState) => state.flow.edges);
+  const nodes = useSelector((state: RootState) => state.flow.nodes);
+  const node = useSelector((state: RootState) => selectNodeById(state, id));
+  const nodeData = useSelector((state: RootState) => selectNodeData(state, id)) || data;
+  const edges = useSelector(selectEdges);
 
   const inputMetadata = useSelector((state: RootState) => selectPropertyMetadata(state, `${type}.input`));
   const outputMetadata = useSelector((state: RootState) => selectPropertyMetadata(state, `${type}.output`));
@@ -167,7 +169,7 @@ const DynamicNode: React.FC<DynamicNodeProps> = ({ id, type, data, position, dis
       Math.max(maxLabelLength * 10, minNodeWidth),
       maxNodeWidth
     );
-    if (finalWidth !== parseInt(nodeWidth)){
+    if (finalWidth !== parseInt(nodeWidth)) {
       setNodeWidth(`${finalWidth}px`);
     }
   }, [nodeData, cleanedInputMetadata, cleanedOutputMetadata, predecessorNodes, nodeWidth]);
@@ -416,4 +418,17 @@ const DynamicNode: React.FC<DynamicNodeProps> = ({ id, type, data, position, dis
   );
 };
 
-export default DynamicNode;
+// Add custom comparison function for memo
+const areEqual = (prevProps: DynamicNodeProps, nextProps: DynamicNodeProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.type === nextProps.type &&
+    prevProps.position?.x === nextProps.position?.x &&
+    prevProps.position?.y === nextProps.position?.y &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.displayOutput === nextProps.displayOutput &&
+    JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data)
+  );
+};
+
+export default React.memo(DynamicNode, areEqual);

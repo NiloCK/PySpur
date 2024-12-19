@@ -13,6 +13,8 @@ import {
   FlowWorkflowNode,
   FlowWorkflowEdge,
   FlowState,
+  selectNodes,
+  selectEdges,
 } from '../../store/flowSlice';
 import NodeSidebar from '../nodes/nodeSidebar/NodeSidebar';
 import { Dropdown, DropdownMenu, DropdownSection, DropdownItem } from '@nextui-org/react';
@@ -115,8 +117,8 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
 
   const { nodeTypes, isLoading } = useNodeTypes({ nodeTypesConfig });
 
-  const nodes = useSelector((state: RootState) => state.flow.nodes);
-  const edges = useSelector((state: RootState) => state.flow.edges);
+  const nodes = useSelector(selectNodes);
+  const edges = useSelector(selectEdges);
   const selectedNodeID = useSelector((state: RootState) => state.flow.selectedNode);
 
   const saveWorkflow = useSaveWorkflow();
@@ -325,7 +327,7 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
 
   const mode = useModeStore((state) => state.mode);
 
-  const nodesWithMode = useMemo(() => {
+  const memoizedNodes = useMemo(() => {
     return nodes
       .filter(Boolean)
       .map(node => ({
@@ -337,6 +339,27 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
         data: node?.data,
       }));
   }, [nodes, mode]);
+
+  const memoizedEdges = useMemo(() => {
+    return edges.map((edge) => ({
+      ...edge,
+      type: 'custom',
+      style: {
+        stroke: 'gray',
+        strokeWidth: edge.id === hoveredEdge
+          ? 4
+          : edge.source === hoveredNode || edge.target === hoveredNode
+            ? 4
+            : 2,
+      },
+      data: {
+        ...edge.data,
+        showPlusButton: edge.id === hoveredEdge,
+        onPopoverOpen: handlePopoverOpen,
+      },
+      key: edge.id,
+    }));
+  }, [edges, hoveredNode, hoveredEdge, handlePopoverOpen]);
 
   const onNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
     setHoveredNode(node.id);
@@ -416,8 +439,8 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
           }}
         >
           <ReactFlow
-            nodes={nodesWithMode}
-            edges={styledEdges}
+            nodes={memoizedNodes}
+            edges={memoizedEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -448,6 +471,7 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
             onEdgeMouseLeave={onEdgeMouseLeave}
             snapToGrid={true}
             snapGrid={[25, 25]}
+            onlyRenderVisibleElements
           >
             <Background />
             {showHelperLines && (

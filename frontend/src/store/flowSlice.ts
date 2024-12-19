@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { applyNodeChanges, applyEdgeChanges, addEdge, Node, Edge, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import { v4 as uuidv4 } from 'uuid';
 import { createNode } from '../utils/nodeFactory';
@@ -69,8 +69,8 @@ export interface FlowState {
   testInputs: TestInput[];
   inputNodeValues: Record<string, any>;
   history: {
-    past: Array<{nodes: FlowWorkflowNode[], edges: FlowWorkflowEdge[]}>;
-    future: Array<{nodes: FlowWorkflowNode[], edges: FlowWorkflowEdge[]}>;
+    past: Array<{ nodes: FlowWorkflowNode[], edges: FlowWorkflowEdge[] }>;
+    future: Array<{ nodes: FlowWorkflowNode[], edges: FlowWorkflowEdge[] }>;
   };
 }
 
@@ -445,6 +445,20 @@ export const {
 
 export default flowSlice.reducer;
 
-export const selectNodeById = (state: { flow: FlowState }, nodeId: string): Node | undefined => {
-  return state.flow.nodes.find((node) => node.id === nodeId);
-};
+export const selectNodes = (state: { flow: FlowState }) => state.flow.nodes;
+export const selectEdges = (state: { flow: FlowState }) => state.flow.edges;
+
+export const selectNodeById = createSelector(
+  [selectNodes, (_state, nodeId: string) => nodeId],
+  (nodes, nodeId) => nodes.find((node) => node.id === nodeId)
+);
+
+export const selectNodeData = createSelector(
+  [selectNodeById],
+  (node) => node?.data
+);
+
+export const selectNodePosition = createSelector(
+  [selectNodeById],
+  (node) => node?.position
+);
