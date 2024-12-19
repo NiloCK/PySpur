@@ -119,6 +119,7 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
 
   const nodes = useSelector(selectNodes);
   const edges = useSelector(selectEdges);
+
   const selectedNodeID = useSelector((state: RootState) => state.flow.selectedNode);
 
   const saveWorkflow = useSaveWorkflow();
@@ -141,36 +142,15 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      if (!changes.some((c) => c.type === 'position')) {
-        setHelperLines({ horizontal: null, vertical: null });
-        dispatch(nodesChange({ changes }));
-        return;
-      }
-
-      const positionChange = changes.find(
-        (c): c is NodeChange & { type: 'position'; position: XYPosition } =>
-          c.type === 'position' && c.position !== undefined
-      );
-
-      if (positionChange && showHelperLines) {
-        const { horizontal, vertical } = getHelperLines(positionChange, nodes);
-        setHelperLines({ horizontal, vertical });
-
-        if (horizontal || vertical) {
-          const snapPosition = { x: positionChange.position.x, y: positionChange.position.y };
-          if (horizontal) snapPosition.y = horizontal;
-          if (vertical) snapPosition.x = vertical;
-          positionChange.position = snapPosition;
-        }
-      }
-
       dispatch(nodesChange({ changes }));
     },
-    [dispatch, nodes, showHelperLines]
+    [dispatch]
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
-    (changes: EdgeChange[]) => dispatch(edgesChange({ changes })),
+    (changes: EdgeChange[]) => {
+      dispatch(edgesChange({ changes }));
+    },
     [dispatch]
   );
 
@@ -328,16 +308,14 @@ const FlowCanvasContent: React.FC<FlowCanvasProps> = (props) => {
   const mode = useModeStore((state) => state.mode);
 
   const memoizedNodes = useMemo(() => {
-    return nodes
-      .filter(Boolean)
-      .map(node => ({
-        ...node,
-        draggable: true,
-        selectable: mode === 'pointer',
-        position: node?.position,
-        type: node?.type,
-        data: node?.data,
-      }));
+    return nodes.map((node) => ({
+      ...node,
+      draggable: true,
+      selectable: mode === 'pointer',
+      position: node?.position,
+      type: node?.type,
+      data: node?.data,
+    }));
   }, [nodes, mode]);
 
   const memoizedEdges = useMemo(() => {

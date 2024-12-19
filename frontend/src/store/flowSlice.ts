@@ -165,9 +165,13 @@ const flowSlice = createSlice({
 
     updateNodeData: (state, action: PayloadAction<{ id: string; data: any }>) => {
       const { id, data } = action.payload;
-      const node = state.nodes.find((node) => node.id === id);
-      if (node) {
-        node.data = { ...node.data, ...data };
+      const nodeIndex = state.nodes.findIndex((node) => node.id === id);
+      if (nodeIndex !== -1) {
+        // Update only the specific node
+        state.nodes[nodeIndex] = {
+          ...state.nodes[nodeIndex],
+          data: { ...state.nodes[nodeIndex].data, ...data },
+        };
       }
     },
 
